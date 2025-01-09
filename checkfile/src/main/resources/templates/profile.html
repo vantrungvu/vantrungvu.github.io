@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>User Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CSS cho sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 250px;
+            background-color: #343a40;
+            padding-top: 20px;
+            color: white;
+            z-index: 1000;
+        }
+        
+        .sidebar-header {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-menu li a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar-menu li a i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar-menu li:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        /* CSS cho main content */
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: margin-left 0.3s;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-250px);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img th:src="${user.avatarUrl}"
+                 alt="avatar"
+                 class="rounded-circle mb-2"
+                 style="width: 64px; height: 64px; object-fit: cover;">
+            <h5 th:text="${user.username}" class="mb-0">Username</h5>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/">
+                    <i class="fas fa-home"></i>
+                    Trang chủ
+                </a>
+            </li>
+            <li>
+                <a href="/profile">
+                    <i class="fas fa-user"></i>
+                    Thông tin tài khoản
+                </a>
+            </li>
+            <li>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-link text-white p-0" style="text-decoration: none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Đăng xuất
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Thông tin tài khoản</h3>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+                        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+                        
+                        <div class="text-center mb-4">
+                            <img th:src="${user.avatarUrl}" 
+                                 alt="avatar" 
+                                 class="rounded-circle mb-3"
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                            <form th:action="@{/profile/avatar}" method="post" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" id="avatarFile" name="avatar" 
+                                           accept="image/*" onchange="previewImage(this);">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Cập nhật avatar</button>
+                            </form>
+                        </div>
+                        
+                        <form th:action="@{/profile/update}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" th:value="${user.username}" readonly>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="currentPassword" class="form-label">Mật khẩu hiện tại</label>
+                                <input type="password" class="form-control" id="currentPassword" name="currentPassword">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="newPassword" class="form-label">Mật khẩu mới</label>
+                                <input type="password" class="form-control" id="newPassword" name="newPassword">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">Xác nhận mật khẩu mới</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Cập nhật</button>
+                            <a href="/" class="btn btn-secondary">Quay lại</a>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Thống kê -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3>Thống kê</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p>Tổng số file: <span th:text="${fileCount}">0</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p>Tổng dung lượng: <span th:text="${totalSize}">0 MB</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.querySelector('img[alt="avatar"]').src = e.target.result;
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    </script>
+</body>
+</html> 
